@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: billlocker
+    runtime: docker
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: billlocker-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: BILLLOCKER_DATA_DIR
+        value: /var/data/billlocker

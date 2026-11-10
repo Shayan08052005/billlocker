@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="BillLocker invoice workspace">
+  <title>BillLocker · Billing Workspace</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+  <script src="operations.js" defer></script>
+</head>
+<body>
+  <main id="login-page" class="login-page">
+    <section class="login-hero">
+      <div class="brand"><img class="brand-logo" src="logo.svg" width="44" height="44" alt=""> <span>Bill<span class="brand-accent">Locker</span></span></div>
+      <div><p class="eyebrow">BILLING WORKSPACE</p><h1>Run your business.<br>Know your numbers.</h1><p>Create invoices, track stock and collect payments from one organised workspace.</p></div>
+      <p class="footer-note">GST BILLING · INVENTORY · BUSINESS REPORTS</p>
+    </section>
+    <section class="login-panel">
+      <form id="login-form" class="login-form">
+        <p class="eyebrow">YOUR BUSINESS, ORGANISED</p><h2 id="auth-heading">Welcome back</h2><p class="muted" id="auth-description">Sign in to manage your business.</p>
+        <div class="auth-tabs"><button type="button" data-auth="login" aria-pressed="true">Login</button><button type="button" data-auth="signup" aria-pressed="false">Create account</button></div>
+        <label>Email address<input name="email" type="email" required maxlength="254" autocomplete="username"></label>
+        <label>Password<input name="password" type="password" required minlength="12" maxlength="128" autocomplete="current-password"></label>
+        <label id="recovery-field" hidden>Recovery key<input name="recovery_key" autocomplete="off" maxlength="128"></label>
+        <button class="primary" id="auth-submit" type="submit">Login</button><button type="button" data-auth="recover" class="text-button">Recover account</button>
+        <p id="login-message" class="message" role="status"></p>
+      </form>
+    </section>
+  </main>
+  <div id="workspace" hidden>
+    <header class="top"><div class="brand"><img class="brand-logo" src="logo.svg" width="44" height="44" alt=""> <span>Bill<span class="brand-accent">Locker</span></span></div><button id="logout" class="secondary" type="button">Sign out</button></header>
+    <div class="work-shell">
+    <nav class="sidebar" aria-label="Workspace sections">
+      <p class="eyebrow">BUSINESS WORKSPACE</p>
+      <button type="button" data-open="dashboard" aria-current="page">Overview</button>
+      <button type="button" data-open="sales">Sales</button><button type="button" data-open="parties">Parties</button>
+      <button type="button" data-open="items">Items &amp; stock</button><button type="button" data-open="purchases">Purchases</button>
+      <button type="button" data-open="payments">Payments</button><button type="button" data-open="expenses">Expenses</button>
+      <button type="button" data-open="reports">Reports</button>
+    </nav>
+    <main class="workspace">
+      <section class="intro" data-page="sales" hidden><div><p class="eyebrow">BILLING WORKSPACE</p><h1>Create an invoice</h1><p class="muted">Enter the supply details and review the calculation before issuing the invoice.</p></div><span class="pill">INR · India</span></section>
+      <section class="card dashboard" data-page="dashboard" aria-labelledby="dashboard-title">
+        <div class="overview-heading"><div><p class="eyebrow">BUSINESS OVERVIEW</p><h2>Your business at a glance</h2><p class="muted">Sales, taxes and payments in one place.</p></div><button type="button" class="primary" id="quick-invoice">＋ Create invoice</button></div><div class="section-head"><span class="step">↗</span><div><h2 id="dashboard-title">Monthly sales dashboard</h2><p class="muted">Last 12 months through the selected month. Amounts reflect issued invoices.</p></div></div>
+        <label class="month-control">Through month<input id="dashboard-month" type="month" required></label>
+        <p id="dashboard-message" class="message" role="status"></p>
+        <dl id="dashboard-summary" class="dashboard-summary"></dl>
+        <div class="scroll"><table class="dashboard-table"><thead><tr><th>Month</th><th>Invoices</th><th>Sales before GST</th><th>GST</th><th>Payable</th><th>Sales trend</th></tr></thead><tbody id="dashboard-rows"></tbody></table></div>
+      </section>
+      <form id="invoice-form" data-page="sales" hidden>
+        <section class="card"><div class="section-head"><span class="step">01</span><div><h2>Invoice details</h2><p class="muted">Choose the document type and place of supply.</p></div></div>
+          <div class="grid three">
+            <label>Document type<select name="mode"><option value="gst">GST Tax Invoice</option><option value="no_gst">Non-GST Commercial Invoice</option><option value="supply">Bill of Supply</option></select></label>
+            <label>Invoice date<input type="date" name="date" required></label>
+            <label>Invoice number <small>Blank for automatic</small><input name="invoice_number" maxlength="16" pattern="[A-Za-z0-9/\-]{1,16}"></label>
+            <label>PDF layout<select name="layout"><option value="classic">Classic · SR01 style</option><option value="modern">Modern</option></select></label>
+            <label>Reference / order<input name="reference" maxlength="60"></label><label>Mode / terms of payment<input name="payment_terms" maxlength="60"></label>
+            <label>Terms / notes<input name="notes" maxlength="240"></label><label>Declaration<input name="declaration" maxlength="220"></label>
+            <label>Place of supply<select name="pos" class="states"><option value="">Select state / UT</option></select></label>
+            <label id="reverse-field">Reverse charge<select name="reverse_charge"><option value="no">No</option><option value="yes">Yes</option></select></label>
+            <label id="supply-field" hidden>Supply category<select name="supply_kind"><option>Exempt</option><option>Nil-rated</option><option>Non-GST</option><option>Composition</option></select></label>
+          </div>
+        </section>
+        <section class="card"><div class="section-head"><span class="step">02</span><div><h2>Business and customer</h2><p class="muted">For ordinary domestic invoices, GST uses supplier location and the selected place of supply.</p></div></div>
+          <div class="grid two parties">
+            <fieldset><legend>Supplier</legend>
+              <label>Business name<input name="seller" required maxlength="90"></label>
+              <label>Business address<textarea name="seller_address" required maxlength="240"></textarea></label>
+              <label id="seller-gstin-field">Supplier GSTIN<input name="seller_gstin" maxlength="15" spellcheck="false"></label>
+              <div id="seller-lookup-field" class="lookup"><button data-lookup="seller" class="secondary" type="button">Look up GSTIN online</button><p id="seller-lookup-message" class="muted" role="status"></p></div>
+              <label>Supplier state<select name="seller_state" class="states"><option value="">Select state / UT</option></select></label>
+            </fieldset>
+            <fieldset><legend>Customer</legend>
+              <label>Saved party<select name="party_id" data-parties></select></label>
+              <label>Customer name<input name="buyer" required maxlength="90"></label>
+              <label>Billing address<textarea name="buyer_address" required maxlength="240"></textarea></label>
+              <label>Customer GSTIN <small>Optional</small><input name="buyer_gstin" maxlength="15" spellcheck="false"></label>
+              <div class="lookup"><button data-lookup="buyer" class="secondary" type="button">Look up GSTIN online</button><p id="buyer-lookup-message" class="muted" role="status"></p></div>
+              <label>Consignee name <small>If different</small><input name="consignee" maxlength="90"></label>
+              <label>Delivery address <small>If different</small><input name="delivery_address" maxlength="240"></label>
+            </fieldset>
+          </div>
+        </section>
+        <section class="card"><div class="section-head"><span class="step">03</span><div><h2>Items and GST</h2><p class="muted">Enter the applicable HSN/SAC and GST rate for each item. Unit prices exclude GST.</p></div></div>
+          <div class="scroll"><table class="items"><thead><tr><th>Saved item</th><th>Description</th><th>HSN/SAC</th><th>UQC</th><th>Qty</th><th>Unit price</th><th>Discount</th><th class="rate">GST %</th><th>Payable</th><th><span class="sr-only">Remove item</span></th></tr></thead><tbody id="items"></tbody></table></div>
+          <button id="add-item" class="secondary" type="button">＋ Add item</button>
+          <div class="calc"><p id="calculation-message" class="muted" role="status">Fill the required details to calculate totals.</p><dl id="totals" class="totals"></dl></div>
+        </section>
+        <section class="card"><div class="section-head"><span class="step">04</span><div><h2>Payment details</h2><p class="muted">Optional. Add a UPI ID to include a payment QR on the invoice PDF.</p></div></div>
+          <div class="grid three">
+            <label>Bank name<input name="bank" maxlength="90"></label><label>Account holder<input name="holder" maxlength="90"></label>
+            <label>Account number<input name="account" maxlength="34" inputmode="numeric"></label><label>IFSC<input name="ifsc" maxlength="11"></label>
+            <label>UPI ID<input name="upi" placeholder="business@bank" maxlength="100" spellcheck="false"></label>
+          </div>
+        </section>
+        <div class="actions"><p id="save-message" class="message" role="status"></p><button class="primary" type="submit">Issue invoice</button></div>
+      </form>
+      <section class="card history" data-page="sales" hidden><div class="section-head"><span class="step">↗</span><div><h2>Invoice register</h2><p class="muted">Recent invoices and monthly CSVs for return preparation and reconciliation.</p></div></div>
+        <div class="exports"><label>Report month<input type="month" id="period" required></label><div class="export-links"><a class="secondary" data-export="sales">Sales CSV</a><a class="secondary" data-export="hsn">HSN CSV</a><a class="secondary" data-export="documents">Documents CSV</a></div></div>
+        <div class="scroll"><table><thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Type</th><th>Payable</th><th>PDF</th></tr></thead><tbody id="history"></tbody></table></div>
+      </section>
+      <section class="card" data-page="parties" hidden>
+        <div class="section-head"><div><h2>Parties</h2><p class="muted">Save customers and suppliers. Choose a party to see its statement.</p></div></div>
+        <form data-record="party" class="record-form"><div class="grid two">
+          <label>Party name<input name="name" maxlength="90" required></label><label>GSTIN<input name="gstin" maxlength="15"></label>
+          <label>Billing address<input name="address" maxlength="240" required></label><label>Phone<input name="phone" maxlength="25" type="tel"></label>
+        </div><button class="primary">Add party</button><p role="status"></p></form>
+        <div class="scroll"><table><thead><tr><th>Party</th><th>GSTIN</th><th>Address</th><th>Receivable</th><th>Payable</th></tr></thead><tbody id="party-rows"></tbody></table></div>
+        <label class="statement-control">Party statement<select id="statement-party"></select></label>
+        <div class="scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Document / method</th><th>Amount</th></tr></thead><tbody id="statement-rows"></tbody></table></div>
+      </section>
+      <section class="card" data-page="items" hidden>
+        <div class="section-head"><div><h2>Items &amp; stock</h2><p class="muted">Stock goods update on linked purchases and sales. Services remain outside stock.</p></div></div>
+        <form data-record="item" class="record-form"><div class="grid three">
+          <label>Item name<input name="name" maxlength="130" required></label><label>Type<select name="type"><option value="goods">Goods</option><option value="service">Service</option></select></label>
+          <label>HSN / SAC<input name="hsn" maxlength="8" inputmode="numeric"></label><label>UQC<input name="unit" value="NOS" maxlength="3" required></label>
+          <label>Sale price before GST<input name="price" type="number" min="0" step="0.01" required></label><label>GST rate %<input name="rate" type="number" min="0" max="100" step="0.001" value="0" required></label>
+          <label>Opening stock<input name="opening" type="number" min="0" step="0.001" value="0" required></label>
+        </div><button class="primary">Add item</button><p role="status"></p></form>
+        <div class="scroll"><table><thead><tr><th>Item</th><th>Type</th><th>HSN / SAC</th><th>Sale price</th><th>Stock on hand</th></tr></thead><tbody id="stock-rows"></tbody></table></div>
+      </section>
+      <section class="card" data-page="purchases" hidden>
+        <div class="section-head"><div><h2>Purchases</h2><p class="muted">Record the supplier bill and the gross amount of each line. Link goods to receive stock.</p></div></div>
+        <form data-record="purchase" class="record-form"><div class="grid three">
+          <label>Supplier<select name="party_id" data-parties required></select></label><label>Supplier invoice no.<input name="bill" maxlength="40" required></label><label>Bill date<input name="date" type="date" required></label>
+        </div><div id="purchase-lines"></div><button class="secondary" id="add-purchase-line" type="button">Add purchase line</button> <button class="primary">Record purchase</button><p role="status"></p></form>
+        <div class="scroll"><table><thead><tr><th>Bill</th><th>Date</th><th>Supplier</th><th>Items</th><th>Amount</th><th>Due</th></tr></thead><tbody id="purchase-rows"></tbody></table></div>
+      </section>
+      <section class="card" data-page="payments" hidden>
+        <div class="section-head"><div><h2>Payments in &amp; out</h2><p class="muted">Record collections against sales and payments against supplier bills.</p></div></div>
+        <form data-record="payment" class="record-form"><div class="grid three">
+          <label>Direction<select name="direction"><option value="in">Payment received</option><option value="out">Payment made</option></select></label>
+          <label>Invoice or bill<select name="target" required></select></label><label>Payment date<input name="date" type="date" required></label>
+          <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label>
+          <label>Method<select name="mode"><option>UPI</option><option>Bank transfer</option><option>Cash</option><option>Cheque</option><option>Other</option></select></label><label>Reference<input name="note" maxlength="100"></label>
+        </div><button class="primary">Record payment</button><p role="status"></p></form>
+        <div class="scroll"><table><thead><tr><th>Date</th><th>Direction</th><th>Invoice / bill</th><th>Method</th><th>Amount</th><th>Reference</th></tr></thead><tbody id="payment-rows"></tbody></table></div>
+      </section>
+      <section class="card" data-page="expenses" hidden>
+        <div class="section-head"><div><h2>Expenses</h2><p class="muted">Log business expenses separately from supplier bills.</p></div></div>
+        <form data-record="expense" class="record-form"><div class="grid two">
+          <label>Date<input name="date" type="date" required></label><label>Category<input name="category" maxlength="60" required></label>
+          <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Details<input name="note" maxlength="150"></label>
+        </div><button class="primary">Record expense</button><p role="status"></p></form>
+        <div class="scroll"><table><thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Amount</th></tr></thead><tbody id="expense-rows"></tbody></table></div>
+      </section>
+      <section class="card" data-page="reports" hidden>
+        <div class="section-head"><div><h2>Business reports</h2><p class="muted">Monthly activity and current outstanding by document. GST CSVs are available in Sales.</p></div></div>
+        <label class="month-control">Activity month<input id="report-month" type="month"></label><dl id="business-summary" class="dashboard-summary"></dl>
+        <div class="scroll"><table><thead><tr><th>Date</th><th>Direction</th><th>Document</th><th>Party</th><th>Amount</th><th>Paid</th><th>Due</th></tr></thead><tbody id="outstanding-rows"></tbody></table></div>
+      </section>
+    </main>
+    </div>
+  </div>
+  <template id="item-template">
+    <tr>
+      <td><select name="item_id" aria-label="Saved item" data-items></select></td>
+      <td><input name="description" aria-label="Item description" required maxlength="130" placeholder="Item or service"></td>
+      <td><input name="hsn" aria-label="HSN or SAC" maxlength="8" inputmode="numeric" placeholder="Code"></td>
+      <td><input name="unit" aria-label="UQC" maxlength="3" value="NOS"></td>
+      <td><input name="quantity" aria-label="Quantity" type="number" value="1" min="0.001" max="1000000" step="0.001" required></td>
+      <td><input name="price" aria-label="Unit price" type="number" min="0" max="10000000" step="0.01" required></td>
+      <td><input name="discount" aria-label="Discount" type="number" value="0" min="0" max="10000000000000" step="0.01" required></td>
+      <td class="rate"><input name="rate" aria-label="GST rate" type="number" min="0.001" max="100" step="0.001" placeholder="Rate"></td>
+      <td class="line-total">—</td><td><button class="remove" type="button" aria-label="Remove item">×</button></td>
+    </tr>
+  </template>
+  <template id="purchase-line-template"><div class="purchase-line grid three">
+    <label>Item<select name="item_id" data-items required></select></label><label>Quantity<input name="quantity" type="number" min="0.001" step="0.001" required></label>
+    <label>Line amount including any GST<input name="amount" type="number" min="0.01" step="0.01" required></label>
+    <button type="button" class="secondary remove-purchase">Remove line</button>
+  </div></template>
+  <dialog id="recovery-dialog"><h2>Save your recovery key</h2><p>Keep this key somewhere private. You can use it with your email address to reset your password.</p><textarea id="recovery-key" readonly aria-label="Your recovery key"></textarea><button type="button" class="secondary" id="download-recovery">Download key</button> <button type="button" class="primary" id="close-recovery">I have saved my key</button></dialog>
+</body>
+</html>
